@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Generator</title>
+    <link rel="stylesheet" href="assets/index-5f2cc3b3.css">
+    
+    <style>
+        .bg-gray-900 {
+            background-color: #1F2937;
+        }
+
+        .text-white {
+            color: #FFFFFF;
+        }
+
+        .text-blue-500 {
+            color: #3B82F6;
+        }
+
+        .bg-gray-800 {
+            background-color: #374151;
+        }
+
+        .bg-blue-500 {
+            background-color: #3B82F6;
+        }
+
+        .hover\:bg-blue-600:hover {
+            background-color: #2563EB;
+        }
+
+        .transition {
+            transition-property: background-color;
+            transition-duration: 300ms;
+        }
+
+        @media screen and (max-width: 768px) {
+            .w-420px {
+                width: 100%;
+                max-width: 90%;
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.4.2/zxcvbn.js"></script>
+  <link rel="stylesheet" href="/assets/index-5f2cc3b3.css">
+</head>
+
+<body class="bg-zinc-900 text-white flex justify-center items-center h-screen">
+    <div class="w-[420px] shadow-xl bg-zinc-800">
+        <h1 class="text-2xl font-semibold mb-1 mt-4 text-center">Password Generator</h1>
+        <div class="max-w-xl w-full p-4 rounded-lg shadow-lg password-section">
+            <div class="mt-4 relative">
+                <input type="text"
+                    class="result__text-field w-full px-3 py-2 rounded-md border bg-gray-800 focus:outline-none focus:border-blue-500"
+                    readonly>
+                <button
+                    class="copy-btn absolute top-0 right-0 mt-2 mr-2 text-white py-1 rounded-md transition duration-300">
+                    <svg width="21" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M20.341 3.091 17.909.659A2.25 2.25 0 0 0 16.319 0H8.25A2.25 2.25 0 0 0 6 2.25V4.5H2.25A2.25 2.25 0 0 0 0 6.75v15A2.25 2.25 0 0 0 2.25 24h10.5A2.25 2.25 0 0 0 15 21.75V19.5h3.75A2.25 2.25 0 0 0 21 17.25V4.682a2.25 2.25 0 0 0-.659-1.591ZM12.469 21.75H2.53a.281.281 0 0 1-.281-.281V7.03a.281.281 0 0 1 .281-.281H6v10.5a2.25 2.25 0 0 0 2.25 2.25h4.5v1.969a.282.282 0 0 1-.281.281Zm6-4.5H8.53a.281.281 0 0 1-.281-.281V2.53a.281.281 0 0 1 .281-.281H13.5v4.125c0 .621.504 1.125 1.125 1.125h4.125v9.469a.282.282 0 0 1-.281.281Zm.281-12h-3v-3h.451c.075 0 .147.03.2.082L18.667 4.6a.283.283 0 0 1 .082.199v.451Z" fill="#A4FFAF"/></svg>
+                </button>
+                <span
+                    class="copied hidden absolute top-0 right-0 mt-1 mr-6 text-[#A4FFAF] py-2 px-4 rounded-md">Copied!</span>
+            </div>
+        </div>
+        <div class="max-w-xl w-full p-6 rounded-lg shadow-lg">
+            <form>
+                <div class="mb-4 flex items-center justify-between">
+                    <label for="length" class="block text-xl font-medium mr-4">Password Length:</label>
+                    <span id="length-value" class="text-[#A4FFAF]">Length: 8</span>
+                </div>
+                <input type="range" id="length" name="length" min="5" max="20"
+                    class="w-full py-2 rounded-md border bg-[#A4FFAF] focus:outline-none focus:border-[#A4FFAF] mb-4">
+                <div class="mb-4">
+                    <label class="items-center mt-2 block">
+                        <input type="checkbox" class="form-checkbox text-blue-500" name="options">
+                        <span class="ml-2">Include Uppercase Letters</span>
+                    </label>
+                    <label class="items-center mt-2 block">
+                        <input type="checkbox" class="form-checkbox text-blue-500" name="options">
+                        <span class="ml-2">Include Lowercase Letters</span>
+                    </label>
+                    <label class="items-center mt-2 block">
+                        <input type="checkbox" class="form-checkbox text-blue-500" name="options">
+                        <span class="ml-2">Include Numbers</span>
+                    </label>
+                    <label class="items-center mt-2 block">
+                        <input type="checkbox" class="form-checkbox text-blue-500" name="options">
+                        <span class="ml-2">Include Symbols</span>
+                    </label>
+                </div>
+                <div class="mb-4 text-xl">
+                    <p>Password Strength: <span id="password-strength" class="password-strength__state"></span></p>
+                    <div class="h-2 bg-gray-300 rounded-full overflow-hidden">
+                        <div id="strength-bar" class="h-full transition-all"></div>
+                    </div>
+                </div>
+                <button type="submit" class="flex items-center justify-center w-full bg-[#A4FFAF] text-black py-2 rounded-md  transition duration-300">
+                    Generate <svg width="12" height="12" xmlns="http://www.w3.org/2000/svg" class="ml-1">
+                        <path fill="black" d="m5.106 12 6-6-6-6-1.265 1.265 3.841 3.84H.001v1.79h7.681l-3.841 3.84z"/>
+                    </svg>
+                </button>                
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const slider = document.querySelector('input[type=range]');
+        const sliderValue = document.querySelector('#length-value');
+        const form = document.querySelector('form');
+        const generateBtn = document.querySelector('button[type=submit]');
+        const constraints = document.querySelectorAll('input[type=checkbox][name=options]');
+        const output = document.querySelector('.result__text-field');
+        const copyBtn = document.querySelector('.copy-btn');
+        const copyText = document.querySelector('.copied');
+        const passwordState = document.querySelector('.password-strength__state');
+        const passwordStrength = document.querySelector('#password-strength');
+        const strengthBar = document.getElementById('strength-bar');
+        const passwordLengthValue = document.getElementById('length');
+
+        const estimateStrength = (password) => {
+            let score = zxcvbn(password).score;
+
+            if (score <= 1) {
+                passwordState.textContent = 'too weak!';
+                passwordStrength.className = 'too-weak';
+                strengthBar.style.backgroundColor = 'red';
+            } else if (score === 2) {
+                passwordState.textContent = 'weak';
+                passwordStrength.className = 'weak';
+                strengthBar.style.backgroundColor = 'orange';
+            } else if (score === 3) {
+                passwordState.textContent = 'medium';
+                passwordStrength.className = 'medium';
+                strengthBar.style.backgroundColor = 'yellow';
+            } else {
+                passwordState.textContent = 'strong';
+                passwordStrength.className = 'strong';
+                strengthBar.style.backgroundColor = 'green';
+            }
+        };
+
+        sliderValue.textContent = slider.value;
+
+        slider.addEventListener('input', () => {
+            const passwordLengthValue = parseInt(slider.value);
+            sliderValue.textContent = `Length: ${passwordLengthValue}`;
+            if (passwordLengthValue === 5) {
+                strengthBar.style.width = '0';
+            } else {
+                estimateStrength(generatePassword());
+            }
+        });
+
+        const upperCase = "ABCDEFGHIJKLMNOPQRSTUVXYZ";
+        const lowerCase = "abcdefghijklmnopqrstuvxyz";
+        const numbers = "0123456789";
+        const specialChars = "£$&()*+[]@#^-_!?";
+
+        sliderValue.textContent = slider.value;
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            let password = generatePassword();
+            if (password) estimateStrength(password);
+        });
+
+        const options = () => {
+            const opt = [];
+            constraints.forEach(option => {
+                if (option.checked) {
+                    switch (option.nextElementSibling.textContent.trim()) {
+                        case "Include Uppercase Letters":
+                            opt.push(upperCase);
+                            break;
+                        case "Include Lowercase Letters":
+                            opt.push(lowerCase);
+                            break;
+                        case "Include Numbers":
+                            opt.push(numbers);
+                            break;
+                        case "Include Symbols":
+                            opt.push(specialChars);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            });
+            return opt;
+        };
+
+        const generatePassword = () => {
+            const passwordOptions = options();
+            const passwordLength = slider.value;
+            let charCategories = passwordOptions.length;
+
+            let password = "";
+
+            if (!charCategories) return "";
+
+            for (let i = 0; i < passwordLength; i++) {
+                let category = passwordOptions[Math.floor(Math.random() * charCategories)];
+                let char = category[Math.floor(Math.random() * category.length)];
+
+                password += char;
+            }
+
+            output.value = password;
+            return password;
+        };
+
+        const copyToClipboard = async () => {
+            try {
+                await navigator.clipboard.writeText(output.value);
+                copyText.classList.remove('hidden');
+                setTimeout(() => {
+                    copyText.classList.add('hidden');
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+            }
+        };
+
+        copyBtn.addEventListener('click', copyToClipboard);
+    </script>
+</body>
+
+</html>
